@@ -1,0 +1,55 @@
+
+.breed-select {
+  margin-bottom: 10px;
+  border: 3px double yellowgreen;
+  border-radius: 3px;
+}
+
+.loader {
+  display: none;
+  margin-bottom: 10px;
+}
+
+.error {
+  display: none;
+  color: red;
+  margin-bottom: 10px;
+}
+
+.cat-info img {
+  width: 500px;
+}
+
+.cat-info p {
+  margin-bottom: 5px;
+}
+
+.cat-info strong {
+  font-weight: bold;
+}
+
+/* https://cssloaders.github.io/ */
+
+.loader{
+  display: block;
+  position: relative;
+  height: 12px;
+  width: 80%;
+  border: 1px solid #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.loader:after{
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0;
+  background: #FF3D00;
+  animation: 6s prog ease-in infinite;
+}
+
+@keyframes prog {
+  to  {   width: 100%;}
+}
