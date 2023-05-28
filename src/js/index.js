@@ -1,6 +1,6 @@
 
 import SlimSelect from 'slim-select'
-import { fetchBreeds, fetchCatByBreed } from './cat-api.js';
+import { fetchBreeds, fetchCatByBreed } from './cat-api';
 
 // Отримуємо посилання на HTML-елементи
 const breedSelect = document.querySelector('.breed-select');
