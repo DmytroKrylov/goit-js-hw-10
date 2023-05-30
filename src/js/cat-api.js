@@ -10,12 +10,12 @@ export function fetchBreeds() {
       'x-api-key': apiKey,
     },
   })
-    .then(response => response.json())
-    .then(data => data.map(breed => ({ id: breed.id, name: breed.name })))
-    .catch(error => {
-      console.error('Error fetching cat breeds:', error);
-      throw error;
-    });
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(response.status);
+      }
+      return response.json();
+    })
 }
 
 // Функція для виконання HTTP-запиту і повернення промісу з даними про кота
@@ -27,22 +27,12 @@ export function fetchCatByBreed(breedId) {
       'x-api-key': apiKey,
     },
   })
-    .then(response => response.json())
-    .then(data => {
-      const catData = data[0];
-      const breed = catData.breeds[0];
-      const catInfo = {
-        name: breed.name,
-        description: breed.description,
-        temperament: breed.temperament,
-        image: catData.url,
-      };
-      return catInfo;
-    })
-    .catch(error => {
-      console.error('Error fetching cat by breed:', error);
-      throw error;
-    });
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(response.status);
+    }
+    return response.json();
+  })
 }
 
 

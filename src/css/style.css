@@ -3,6 +3,7 @@
   margin-bottom: 10px;
   border: 3px double yellowgreen;
   border-radius: 3px;
+  display: none;
 }
 
 .loader {

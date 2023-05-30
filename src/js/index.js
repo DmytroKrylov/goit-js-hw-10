@@ -1,5 +1,5 @@
 
-import SlimSelect from 'slim-select'
+// import SlimSelect from 'slim-select'
 import { fetchBreeds, fetchCatByBreed } from './cat-api';
 
 // Отримуємо посилання на HTML-елементи
@@ -7,6 +7,8 @@ const breedSelect = document.querySelector('.breed-select');
 const loader = document.querySelector('.loader');
 const error = document.querySelector('.error');
 const catInfo = document.querySelector('.cat-info');
+
+// Дописати приховування селекту
 
 // Показуємо loader
 function showLoader() {
@@ -45,12 +47,12 @@ function populateBreedsSelect(breeds) {
   });
 
   // Ініціалізуємо SlimSelect для стилізації селекта
-  new SlimSelect({
-    select: breedSelect,
-    showSearch: false,
-    placeholder: 'Select Breed'
-  });
-}
+    new SlimSelect({
+      select: breedSelect,
+      showSearch: false,
+      placeholder: 'Select Breed'
+    });
+  }
 
 // Заповнюємо div.cat-info інформацією про кота
 function showCatInfo(catInfoData) {
@@ -77,11 +79,24 @@ function onBreedSelectChange() {
     hideError();
 
     fetchCatByBreed(selectedBreedId)
+    .then(data => {
+      // debugger
+      const catData = data[0];
+      const breed = catData.breeds[0];
+      const catInfo = {
+        name: breed.name,
+        description: breed.description,
+        temperament: breed.temperament,
+        image: catData.url,
+      };
+      return catInfo;
+    })
       .then(catInfoData => {
         showCatInfo(catInfoData);
         toggleLoadingElements(false);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.log(error)
         showError();
         toggleLoadingElements(false);
       });
@@ -97,14 +112,17 @@ breedSelect.addEventListener('change', onBreedSelectChange);
 toggleLoadingElements(true);
 
 fetchBreeds()
-  .then(breeds => {
+   .then(data => data.map(breed => ({ id: breed.id, name: breed.name })))
+   .then(breeds => {
+    breedSelect.style.display = 'block'
     populateBreedsSelect(breeds);
     toggleLoadingElements(false);
   })
-  .catch(() => {
+  .catch((error) => {
+    console.log(error)
     showError();
     toggleLoadingElements(false);
   });
 
 // Приховуємо елемент p.error при завантаженні сторінки
-hideError();
+hideError()
