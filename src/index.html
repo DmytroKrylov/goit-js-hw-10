@@ -1,18 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Homework 10</title>
-    <link href="https://unpkg.com/slim-select@latest/dist/slimselect.css" rel="stylesheet"></link>
-    <link rel="stylesheet" href="./css/style.css">
-  <body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Search App</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <form class="search-form" id="search-form">
+    <input
+      type="text"
+      name="searchQuery"
+      autocomplete="off"
+      placeholder="Search images..."
+    />
+    <button type="submit">Search</button>
+  </form>
 
-    <select class="breed-select"></select>
-    <p class="loader"></p>
-    <p class="error">Oops! Something went wrong! Try reloading the page!</p>
-    <div class="cat-info"></div>
+  <div class="gallery">
+    <!-- Image cards will be rendered here -->
+  </div>
 
-    <script src="./js/index.js" type="module"></script>
-  </body>
+  <button type="button" class="load-more">Load more</button>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/notiflix"></script>
+  <script src="./js/index.js"></script>
+</body>
 </html>

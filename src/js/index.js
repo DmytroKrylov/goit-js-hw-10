@@ -1,128 +1,148 @@
+const form = document.getElementById('search-form');
+const gallery = document.querySelector('.gallery');
+const loadMoreBtn = document.querySelector('.load-more');
 
-// import SlimSelect from 'slim-select'
-import { fetchBreeds, fetchCatByBreed } from './cat-api';
+const API_KEY = '17074451-935a1dfdbcca0fa80856ea2a8';
+const BASE_URL = 'https://pixabay.com/api/';
 
-// Отримуємо посилання на HTML-елементи
-const breedSelect = document.querySelector('.breed-select');
-const loader = document.querySelector('.loader');
-const error = document.querySelector('.error');
-const catInfo = document.querySelector('.cat-info');
+let page = 1;
+let searchQuery = '';
 
-// Дописати приховування селекту
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  searchQuery = event.target.searchQuery.value.trim();
 
-// Показуємо loader
-function showLoader() {
-  loader.style.display = 'block';
-}
+  if (searchQuery === '') {
+    return;
+  }
 
-// Ховаємо loader
-function hideLoader() {
-  loader.style.display = 'none';
-}
+  page = 1;
+  gallery.innerHTML = '';
+  loadMoreBtn.style.display = 'none';
 
-// Показуємо повідомлення про помилку
-function showError() {
-  error.classList.add('show');
-}
-
-// Ховаємо повідомлення про помилку
-function hideError() {
-  error.classList.remove('show');
-}
-
-// Показуємо/ховаємо елементи при запиті
-function toggleLoadingElements(loading) {
-  breedSelect.disabled = loading;
-  catInfo.style.display = loading ? 'none' : 'block';
-  loader.style.display = loading ? 'block' : 'none';
-}
-
-// Заповнюємо select.breed-select опціями
-function populateBreedsSelect(breeds) {
-  breeds.forEach(breed => {
-    const option = document.createElement('option');
-    option.value = breed.id;
-    option.textContent = breed.name;
-    breedSelect.appendChild(option);
-  });
-
-  // Ініціалізуємо SlimSelect для стилізації селекта
-    new SlimSelect({
-      select: breedSelect,
-      showSearch: false,
-      placeholder: 'Select Breed'
+  try {
+    const response = await axios.get(BASE_URL, {
+      params: {
+        key: API_KEY,
+        q: searchQuery,
+        image_type: 'photo',
+        orientation: 'horizontal',
+        safesearch: true,
+        page: page,
+        per_page: 40
+      }
     });
+
+    const images = response.data.hits;
+
+    if (images.length === 0) {
+      showNoResultsMessage();
+      return;
+    }
+
+    renderImages(images);
+    checkLoadMoreButtonVisibility(response.data.totalHits);
+  } catch (error) {
+    console.log('Error:', error);
+    showErrorNotification();
   }
+});
 
-// Заповнюємо div.cat-info інформацією про кота
-function showCatInfo(catInfoData) {
-  catInfo.innerHTML = `
-    <img src="${catInfoData.image}" alt="Cat Image" />
-    <p><strong>Name:</strong> ${catInfoData.name}</p>
-    <p><strong>Description:</strong> ${catInfoData.description}</p>
-    <p><strong>Temperament:</strong> ${catInfoData.temperament}</p>
-  `;
-}
+loadMoreBtn.addEventListener('click', async () => {
+  page++;
 
-// Очищуємо div.cat-info
-function clearCatInfo() {
-  catInfo.innerHTML = '';
-}
+  try {
+    const response = await axios.get(BASE_URL, {
+      params: {
+        key: API_KEY,
+        q: searchQuery,
+        image_type: 'photo',
+        orientation: 'horizontal',
+        safesearch: true,
+        page: page,
+        per_page: 40
+      }
+    });
 
-// Обробник події вибору опції в селекті
-function onBreedSelectChange() {
-  const selectedBreedId = breedSelect.value;
+    const images = response.data.hits;
 
-  if (selectedBreedId) {
-    toggleLoadingElements(true);
-    clearCatInfo();
-    hideError();
+    if (images.length === 0) {
+      showNoResultsMessage();
+      return;
+    }
 
-    fetchCatByBreed(selectedBreedId)
-    .then(data => {
-      // debugger
-      const catData = data[0];
-      const breed = catData.breeds[0];
-      const catInfo = {
-        name: breed.name,
-        description: breed.description,
-        temperament: breed.temperament,
-        image: catData.url,
-      };
-      return catInfo;
-    })
-      .then(catInfoData => {
-        showCatInfo(catInfoData);
-        toggleLoadingElements(false);
-      })
-      .catch((error) => {
-        console.log(error)
-        showError();
-        toggleLoadingElements(false);
-      });
-  } else {
-    clearCatInfo();
+    renderImages(images);
+    checkLoadMoreButtonVisibility(response.data.totalHits);
+  } catch (error) {
+    console.log('Error:', error);
+    showErrorNotification();
   }
-}
+});
 
-// Встановлюємо обробник події для селекту
-breedSelect.addEventListener('change', onBreedSelectChange);
+function renderImages(images) {
+  const fragment = document.createDocumentFragment();
 
-// Запускаємо отримання списку порід при завантаженні сторінки
-toggleLoadingElements(true);
-
-fetchBreeds()
-   .then(data => data.map(breed => ({ id: breed.id, name: breed.name })))
-   .then(breeds => {
-    breedSelect.style.display = 'block'
-    populateBreedsSelect(breeds);
-    toggleLoadingElements(false);
-  })
-  .catch((error) => {
-    console.log(error)
-    showError();
-    toggleLoadingElements(false);
+  images.forEach((image) => {
+    const card = createImageCard(image);
+    fragment.appendChild(card);
   });
 
-// Приховуємо елемент p.error при завантаженні сторінки
-hideError()
+  gallery.appendChild(fragment);
+}
+
+function createImageCard(image) {
+  const card = document.createElement('div');
+  card.classList.add('photo-card');
+
+  const img = document.createElement('img');
+  img.src = image.webformatURL;
+  img.alt = image.tags;
+  img.loading = 'lazy';
+
+  const info = document.createElement('div');
+  info.classList.add('info');
+
+  const likes = createInfoItem('Likes', image.likes);
+  const views = createInfoItem('Views', image.views);
+  const comments = createInfoItem('Comments', image.comments);
+  const downloads = createInfoItem('Downloads', image.downloads);
+
+  info.appendChild(likes);
+  info.appendChild(views);
+  info.appendChild(comments);
+  info.appendChild(downloads);
+
+  card.appendChild(img);
+  card.appendChild(info);
+
+  return card;
+}
+
+function createInfoItem(label, value) {
+  const item = document.createElement('p');
+  item.classList.add('info-item');
+  item.innerHTML = `<b>${label}:</b> ${value}`;
+  return item;
+}
+
+function checkLoadMoreButtonVisibility(totalHits) {
+  const remainingImages = totalHits - page * 40;
+  if (remainingImages > 0) {
+    loadMoreBtn.style.display = 'block';
+  } else {
+    loadMoreBtn.style.display = 'none';
+    showEndOfResultsMessage();
+  }
+}
+
+function showNoResultsMessage() {
+  Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+}
+
+function showEndOfResultsMessage() {
+  Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
+}
+
+function showErrorNotification() {
+  Notiflix.Notify.failure('An error occurred while fetching the images. Please try again later.');
+}
